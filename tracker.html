@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CC Perk Tracker · Matrix View</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; padding: 20px; color: #1a1a2e; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 26px; }
+  .subtitle { color: #666; margin: 4px 0 20px; font-size: 13px; }
+  .top-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+  .btn { padding: 6px 14px; border-radius: 6px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 13px; color: #333; }
+  .btn:hover { background: #f5f5f5; }
+  .btn-danger { color: #dc2626; border-color: #fca5a5; }
+  .btn-danger:hover { background: #fef2f2; }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: #666; flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+
+  /* Category section */
+  .category { margin-bottom: 24px; }
+  .cat-header { font-size: 17px; font-weight: 700; padding: 8px 0 10px; border-bottom: 2px solid #e5e7eb; display: flex; align-items: center; gap: 8px; }
+  .cat-header .count { font-size: 13px; font-weight: 400; color: #888; margin-left: auto; }
+
+  /* Matrix table */
+  .matrix { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .matrix th { text-align: left; padding: 8px 6px; font-weight: 600; color: #555; font-size: 12px; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
+  .matrix td { padding: 8px 6px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+  .matrix tr:hover td { background: #fafbfc; }
+  .card-cell { min-width: 130px; }
+  .card-name { font-weight: 600; font-size: 13px; }
+  .card-owner { font-size: 11px; color: #888; }
+  .perk-list { display: flex; flex-direction: column; gap: 6px; }
+  .perk-item { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .perk-label { font-size: 12px; color: #333; line-height: 1.3; }
+
+  /* Tracking controls */
+  .ctrl-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: #2563eb; flex-shrink: 0; }
+  .ctrl-number { width: 50px; font-size: 12px; padding: 2px 4px; border: 1px solid #ddd; border-radius: 4px; outline: none; }
+  .ctrl-number:focus { border-color: #2563eb; }
+  .ctrl-text { width: 70px; font-size: 12px; padding: 2px 4px; border: 1px solid #ddd; border-radius: 4px; outline: none; }
+  .ctrl-text:focus { border-color: #2563eb; }
+  .ctrl-date { font-size: 12px; padding: 2px 4px; border: 1px solid #ddd; border-radius: 4px; outline: none; }
+  .ctrl-date:focus { border-color: #2563eb; }
+  .ctrl-btn { width: 22px; height: 22px; border-radius: 4px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 14px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; color: #555; }
+  .ctrl-btn:hover { background: #f0f0f0; }
+  .ctrl-btn:disabled { opacity: .3; cursor: default; }
+
+  /* Badges */
+  .badge { font-size: 11px; padding: 1px 7px; border-radius: 99px; font-weight: 500; white-space: nowrap; display: inline-block; }
+  .badge-used { background: #fee2e2; color: #991b1b; }
+  .badge-unused { background: #f3f4f6; color: #6b7280; }
+  .badge-partial { background: #fef9c3; color: #854d0e; }
+  .badge-ok { background: #dcfce7; color: #166534; }
+  .badge-reminder { background: #f0f9ff; color: #0369a1; }
+
+  .progress { height: 3px; background: #e5e7eb; border-radius: 2px; margin-top: 4px; overflow: hidden; max-width: 120px; }
+  .progress-bar { height: 100%; background: #2563eb; border-radius: 2px; transition: width .3s; }
+  .progress-bar.done { background: #16a34a; }
+
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1a1a2e; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 100; }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 900px) {
+    body { padding: 12px; }
+    .matrix, .matrix tbody, .matrix tr { display: block; }
+    .matrix td { display: flex; padding: 6px 0; border: none; }
+    .matrix td::before { content: attr(data-label); font-weight: 600; width: 100px; flex-shrink: 0; font-size: 12px; color: #888; }
+    .matrix thead { display: none; }
+    .card-cell { min-width: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="top-bar">
+    <h1>💳 Perk Matrix</h1>
+    <button class="btn" onclick="resetAll()">Reset Data</button>
+    <div class="legend">
+      <span>🔲 = not used</span>
+      <span>✅ = used</span>
+      <span>🟡 = partially used</span>
+    </div>
+  </div>
+  <p class="subtitle" id="statusBar">All changes saved automatically</p>
+  <div id="app"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Categories & Perks ─────────────────────────────────────
+// Each perk: [cardIdx, perkIdx, cardName, owner, label, type, ...typeData]
+// Types: 'used' (checkbox), 'counter'(max), 'dollar'(max), 'dollar_airline'(max), 'expiry', 'reminder'
+
+const CARDS = [
+  { name:"IHG Premier", owner:"Jin Bao", fee:99 },
+  { name:"United Explorer", owner:"Jin Bao", fee:150 },
+  { name:"United Explorer", owner:"Xiaoguang Dai", fee:150 },
+  { name:"Amex Platinum", owner:"Xiaoguang Dai", fee:895 },
+  { name:"Alaska Atmos Summit", owner:"Xiaoguang Dai", fee:395 },
+  { name:"Aeroplan", owner:"Jin Bao", fee:95 },
+  { name:"Aeroplan", owner:"Xiaoguang Dai", fee:95 },
+  { name:"World of Hyatt", owner:"Jin Bao", fee:95 },
+  { name:"World of Hyatt", owner:"Xiaoguang Dai", fee:95 },
+  { name:"Marriott Boundless", owner:"Jin Bao", fee:95 },
+  { name:"Hilton Aspire", owner:"Jin Bao", fee:550 },
+  { name:"Chase Sapphire Preferred", owner:"Xiaoguang Dai", fee:95 },
+];
+
+const CATEGORIES = [
+  {
+    label: "💰 Annual Fees",
+    perks: [
+      [0,"","IHG Premier","Jin Bao","$99/yr — due day 15th","expiry"],
+      [1,"","United Explorer","Jin Bao","$150/yr","expiry"],
+      [2,"","United Explorer","Xiaoguang Dai","$150/yr","expiry"],
+      [3,"","Amex Platinum","Xiaoguang Dai","$895/yr","expiry"],
+      [4,"","Alaska Summit","Xiaoguang Dai","$395/yr","expiry"],
+      [5,"","Aeroplan","Jin Bao","$95/yr","expiry"],
+      [6,"","Aeroplan","Xiaoguang Dai","$95/yr","expiry"],
+      [7,"","World of Hyatt","Jin Bao","$95/yr","expiry"],
+      [8,"","World of Hyatt","Xiaoguang Dai","$95/yr","expiry"],
+      [9,"","Marriott Boundless","Jin Bao","$95/yr","expiry"],
+      [10,"","Hilton Aspire","Jin Bao","$550/yr","expiry"],
+      [11,"","Chase Sapphire Preferred","Xiaoguang Dai","$95/yr","expiry"],
+    ]
+  },
+  {
+    label: "🏨 Hotel Free Nights",
+    perks: [
+      [0,0,"IHG Premier","Jin Bao","Anniversary Free Night (40k)","expiry"],
+      [7,0,"World of Hyatt","Jin Bao","Free Cat 1-4 night","expiry"],
+      [8,0,"World of Hyatt","Xiaoguang Dai","Free Cat 1-4 night","expiry"],
+      [9,0,"Marriott Boundless","Jin Bao","Free Night Award (35k)","expiry"],
+      [10,0,"Hilton Aspire","Jin Bao","Free Night Award (no cap)","expiry"],
+      [7,5,"World of Hyatt","Jin Bao","3x Cat 1-4 Free Nights (bonus)","counter",3,"expiry"],
+      [9,6,"Marriott Boundless","Jin Bao","5x 50k Free Nights (bonus)","counter",5,"expiry"],
+    ]
+  },
+  {
+    label: "🎁 Free Night on Award Stays",
+    perks: [
+      [0,"","IHG Premier","Jin Bao","Redeem 3, get 4th Night Free","reminder"],
+      [10,"","Hilton Aspire","Jin Bao","5th Night Free on award stays (Diamond)","reminder"],
+      [9,"","Marriott Boundless","Jin Bao","5th Night Free on award stays","reminder"],
+    ]
+  },
+  {
+    label: "✈️ Airline Credits",
+    perks: [
+      [0,1,"IHG Premier","Jin Bao","$25 United TravelBank (Jan-Jun)","dollar",25],
+      [0,"","IHG Premier","Jin Bao","$25 United TravelBank (Jul-Dec)","dollar",25],
+      [3,0,"Amex Platinum","Xiaoguang Dai","$200 airline credit","dollar_airline",200],
+      [9,1,"Marriott Boundless","Jin Bao","$50 airline credit (Jan-Jun, $250 spend req'd)","dollar",50],
+      [9,"","Marriott Boundless","Jin Bao","$50 airline credit (Jul-Dec, $250 spend req'd)","dollar",50],
+      [10,1,"Hilton Aspire","Jin Bao","$200 airline credit ($50/qtr, TravelBank reloads work)","dollar",200],
+    ]
+  },
+  {
+    label: "🦅 Alaska Companion Awards",
+    perks: [
+      [4,0,"Alaska Summit","Xiaoguang Dai","25k Global Companion Award (annual)","dollar",25000,"pts"],
+      [4,"","Alaska Summit","Xiaoguang Dai","100k Global Companion Award (after $60k spend)","dollar",100000,"pts"],
+    ]
+  },
+  {
+    label: "🏨 Hotel Credits",
+    perks: [
+      [3,1,"Amex Platinum","Xiaoguang Dai","$600 FHR/THC hotel credit","dollar",600],
+      [10,2,"Hilton Aspire","Jin Bao","$400 Hilton resort credit","dollar",400],
+      [10,3,"Hilton Aspire","Jin Bao","$100 Waldorf Astoria/Conrad","dollar",100],
+      [1,4,"United Explorer","Jin Bao","$100 United Hotels credit (2x $50)","dollar",100],
+      [2,5,"United Explorer","Xiaoguang Dai","$100 United Hotels credit (2x $50)","dollar",100],
+      [11,6,"Chase Sapphire Preferred","Xiaoguang Dai","$50 Chase Travel hotel credit","dollar",50],
+    ]
+  },
+  {
+    label: "🍽️ Dining Credits",
+    perks: [
+      [3,2,"Amex Platinum","Xiaoguang Dai","$400 Resy dining ($100/qtr)","dollar",400],
+    ]
+  },
+  {
+    label: "🛋️ Lounge Access",
+    perks: [
+      [1,1,"United Explorer","Jin Bao","2x United Club passes/yr","counter",2],
+      [2,1,"United Explorer","Xiaoguang Dai","2x United Club passes/yr","counter",2],
+      [4,1,"Alaska Summit","Xiaoguang Dai","8x Alaska Lounge passes/yr (2/qtr, exp quarterly)","counter",8],
+      [3,5,"Amex Platinum","Xiaoguang Dai","Centurion Lounge (unlimited)","reminder"],
+      [3,6,"Amex Platinum","Xiaoguang Dai","Priority Pass Select (unlimited)","reminder"],
+      [3,7,"Amex Platinum","Xiaoguang Dai","Delta Sky Club (10 visits/yr)","counter",10],
+      [3,8,"Amex Platinum","Xiaoguang Dai","Escape / Plaza Premium / Lufthansa*","reminder"],
+    ]
+  },
+  {
+    label: "🚗 Rideshare / Transit Credits",
+    perks: [
+      [1,6,"United Explorer","Jin Bao","$5/mo rideshare credit","dollar",60],
+      [2,6,"United Explorer","Xiaoguang Dai","$5/mo rideshare credit","dollar",60],
+      [3,3,"Amex Platinum","Xiaoguang Dai","$200 Uber Cash ($15/mo)","dollar",200],
+      [11,7,"Chase Sapphire Preferred","Xiaoguang Dai","DashPass (DoorDash)","reminder"],
+    ]
+  },
+  {
+    label: "📦 Shopping / Wellness",
+    perks: [
+      [1,5,"United Explorer","Jin Bao","$10/mo Instacart credit","dollar",120],
+      [2,5,"United Explorer","Xiaoguang Dai","$10/mo Instacart credit","dollar",120],
+      [3,4,"Amex Platinum","Xiaoguang Dai","$300 digital entertainment","reminder"],
+      [3,9,"Amex Platinum","Xiaoguang Dai","$50 Saks (ending Jun 30, 2026)","dollar",50],
+      [3,10,"Amex Platinum","Xiaoguang Dai","$75/qtr Lululemon ($300/yr)","dollar",300],
+      [3,11,"Amex Platinum","Xiaoguang Dai","$200 Oura Ring (ouraring.com)","dollar",200],
+      [3,12,"Amex Platinum","Xiaoguang Dai","$300 Equinox+ (digital or club)","dollar",300],
+    ]
+  },
+  {
+    label: "🛂 Global Entry / TSA / NEXUS ($120)",
+    perks: [
+      [0,3,"IHG Premier","Jin Bao","Every 4 yrs","reminder"],
+      [1,4,"United Explorer","Jin Bao","Every 4 yrs","reminder"],
+      [2,4,"United Explorer","Xiaoguang Dai","Every 4 yrs","reminder"],
+      [3,7,"Amex Platinum","Xiaoguang Dai","Every 4 yrs","reminder"],
+      [4,6,"Alaska Summit","Xiaoguang Dai","Every 4 yrs","reminder"],
+      [5,1,"Aeroplan","Jin Bao","Every 4 yrs","reminder"],
+      [6,1,"Aeroplan","Xiaoguang Dai","Every 4 yrs","reminder"],
+      [3,8,"Amex Platinum","Xiaoguang Dai","$209 CLEAR+ credit","reminder"],
+      [10,9,"Hilton Aspire","Jin Bao","$209 CLEAR+ credit","reminder"],
+    ]
+  },
+  {
+    label: "✅ Travel Reminders",
+    perks: [
+      [1,0,"United Explorer","Jin Bao","Free first checked bag (+1)","reminder"],
+      [2,0,"United Explorer","Xiaoguang Dai","Free first checked bag (+1)","reminder"],
+      [1,2,"United Explorer","Jin Bao","9x on United flights","reminder"],
+      [2,2,"United Explorer","Xiaoguang Dai","9x on United flights","reminder"],
+      [1,3,"United Explorer","Jin Bao","25% off inflight purchases","reminder"],
+      [2,3,"United Explorer","Xiaoguang Dai","25% off inflight purchases","reminder"],
+      [3,0,"Alaska Summit","Xiaoguang Dai","3x Alaska/dining/foreign","reminder"],
+      [4,2,"Alaska Summit","Xiaoguang Dai","Free checked bag (+6 guests)","reminder"],
+      [4,3,"Alaska Summit","Xiaoguang Dai","10k bonus status pts/yr","reminder"],
+      [4,4,"Alaska Summit","Xiaoguang Dai","$50 delay/cancellation voucher","reminder"],
+      [5,0,"Aeroplan","Jin Bao","Free first checked bag (+8)","reminder"],
+      [6,0,"Aeroplan","Xiaoguang Dai","Free first checked bag (+8)","reminder"],
+      [10,4,"Hilton Aspire","Jin Bao","14x Hilton / 7x flights & dining","reminder"],
+    ]
+  },
+];
+
+// ─── State ──────────────────────────────────────────────────
+function getState() {
+  try { return JSON.parse(localStorage.getItem('ccMatrix')) || {}; }
+  catch { return {}; }
+}
+function setState(s) {
+  localStorage.setItem('ccMatrix', JSON.stringify(s));
+}
+
+// Build key: "catIdx-perkIdx"
+function key(ci, pi) { return `${ci}-${pi}`; }
+
+function render() {
+  const state = getState();
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  CATEGORIES.forEach((cat, ci) => {
+    const section = document.createElement('div');
+    section.className = 'category';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'cat-header';
+    hdr.innerHTML = `${cat.label} <span class="count">${cat.perks.length}</span>`;
+    section.appendChild(hdr);
+
+    const table = document.createElement('table');
+    table.className = 'matrix';
+
+    // header row
+    const thead = document.createElement('thead');
+    const tr = document.createElement('tr');
+    const isFees = cat.label.includes('Annual Fees');
+    const isAirline = cat.label.includes('Airline Credits');
+    const isFnas = cat.label.includes('Free Night on Award Stays');
+    const isAlaska = cat.label.includes('Alaska Companion');
+    const isDining = cat.label.includes('Dining Credits');
+    const isLounge = cat.label.includes('Lounge Access');
+    const isRideshare = cat.label.includes('Rideshare');
+    const isShopping = cat.label.includes('Shopping');
+    const isHotel = cat.label.includes('Hotel Credits');
+    const isGlobalEntry = cat.label.includes('Global Entry');
+    const isTravel = cat.label.includes('Travel Reminders');
+    const expLabel = isFees || isAirline ? 'Renewal Date' : isHotel ? 'Renewal' : 'Expiration';
+    const headers = isFees
+      ? ['Card','Owner','Perk','Renewal Date']
+      : isFnas || isShopping || isGlobalEntry || isTravel
+        ? ['Card','Owner','Perk']
+        : isRideshare
+          ? ['Card','Owner','Perk','Enrollment Required']
+          : isDining || isLounge
+            ? ['Card','Owner','Perk','Status']
+            : ['Card','Owner','Perk', expLabel,'Status'];
+    headers.forEach(t => {
+      const th = document.createElement('th');
+      th.textContent = t;
+      tr.appendChild(th);
+    });
+    thead.appendChild(tr);
+    table.appendChild(thead);
+
+    // body rows
+    const tbody = document.createElement('tbody');
+    cat.perks.forEach((p, pi) => {
+      const k = key(ci, pi);
+      const val = state[k] || {};
+      const [cardIdx, , cardName, owner, label, type, ...typeArgs] = p;
+      const row = document.createElement('tr');
+
+      // Card
+      let cardHtml = `<div class="card-name">${cardName}</div><div class="card-owner">${owner}</div>`;
+
+      // Perk label
+      let perkLabel = label;
+
+      // Status controls
+      let statusHtml = '';
+      let expiryHtml = '';
+      const used = parseInt(val.used) || 0;
+      const checked = val.checked === true || val.checked === 'true';
+      const expiry = val.expiry || '';
+      const airline = val.airline || '';
+      const enrolled = val.enrolled === true || val.enrolled === 'true';
+      const enrollHtml = `<label><input type="checkbox" class="ctrl-checkbox" data-key="${k}" data-path="enrolled" ${enrolled?'checked':''}> <span class="badge ${enrolled?'badge-used':'badge-ok'}">${enrolled?'Yes':'No'}</span></label>`;
+      const mdPicker = (v) => `<input type="text" class="ctrl-text" data-key="${k}" data-path="expiry" value="${v||''}" placeholder="e.g. Jan 15" style="width:90px">`;
+
+      switch (type) {
+        case 'used':
+          statusHtml = `<label><input type="checkbox" class="ctrl-checkbox" data-key="${k}" data-path="checked" ${checked?'checked':''}> ${checked ? '<span class="badge badge-used">used</span>' : '<span class="badge badge-unused">not used</span>'}</label>`;
+          break;
+
+        case 'expiry':
+          const expBadge = checked ? '<span class="badge badge-used">used</span>' : '<span class="badge badge-ok">active</span>';
+          statusHtml = `<label><input type="checkbox" class="ctrl-checkbox" data-key="${k}" data-path="checked" ${checked?'checked':''}></label> ${expBadge}`;
+          expiryHtml = mdPicker(expiry);
+          break;
+
+        case 'counter':
+          const left = typeArgs[0] - used;
+          const pct = (used / typeArgs[0]) * 100;
+          statusHtml = `
+            <div style="display:flex;align-items:center;gap:4px">
+              <button class="ctrl-btn" data-key="${k}" data-action="dec" data-max="${typeArgs[0]}" ${used<=0?'disabled':''}>−</button>
+              <span>${used}/${typeArgs[0]}</span>
+              <button class="ctrl-btn" data-key="${k}" data-action="inc" data-max="${typeArgs[0]}" ${used>=typeArgs[0]?'disabled':''}>+</button>
+              ${used<=0?'<span class="badge badge-ok">all available</span>':used>=typeArgs[0]?'<span class="badge badge-used">all used</span>':`<span class="badge badge-partial">${left} left</span>`}
+            </div>
+            <div class="progress"><div class="progress-bar ${used>=typeArgs[0]?'done':''}" style="width:${pct}%"></div></div>
+          `;
+          if (typeArgs[1] === 'expiry') expiryHtml = mdPicker(expiry);
+          break;
+
+        case 'dollar':
+          const maxD = typeArgs[0];
+          const unit = typeArgs[1] || '$';
+          const dLeft = maxD - used;
+          const dpct = (used / maxD) * 100;
+          statusHtml = `
+            <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+              <span>${unit}</span>
+              <input type="number" class="ctrl-number" data-key="${k}" data-path="used" value="${used}" min="0" max="${maxD}">
+              <span>/ ${unit}${maxD}</span>
+              ${used<=0?'<span class="badge badge-ok">available</span>':used>=maxD?'<span class="badge badge-used">done</span>':`<span class="badge badge-partial">${dLeft} left</span>`}
+            </div>
+            <div class="progress"><div class="progress-bar ${used>=maxD?'done':''}" style="width:${dpct}%"></div></div>
+          `;
+          if (isAirline || isAlaska) expiryHtml = mdPicker(expiry);
+          break;
+
+        case 'dollar_airline':
+          const maxDA = typeArgs[0];
+          const dALeft = maxDA - used;
+          const dapct = (used / maxDA) * 100;
+          statusHtml = `
+            <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+              <input type="text" class="ctrl-text" data-key="${k}" data-path="airline" value="${airline}" placeholder="Airline">
+              <span>$</span>
+              <input type="number" class="ctrl-number" data-key="${k}" data-path="used" value="${used}" min="0" max="${maxDA}">
+              <span>/ $${maxDA}</span>
+              ${used<=0?'<span class="badge badge-ok">available</span>':used>=maxDA?'<span class="badge badge-used">done</span>':`<span class="badge badge-partial">$${dALeft} left</span>`}
+            </div>
+            <div class="progress"><div class="progress-bar ${used>=maxDA?'done':''}" style="width:${dapct}%"></div></div>
+          `;
+          if (isAirline) expiryHtml = mdPicker(expiry);
+          break;
+
+        case 'reminder':
+          statusHtml = '<span class="badge badge-reminder">reminder</span>';
+          break;
+      }
+
+      if (isHotel) {
+        const renewal = val.renewal || 'semi-annually';
+        expiryHtml = `<select class="ctrl-select" data-key="${k}" data-path="renewal">
+          <option value="annually" ${renewal==='annually'?'selected':''}>Annually</option>
+          <option value="semi-annually" ${renewal==='semi-annually'?'selected':''}>Semi-annually</option>
+          <option value="quarterly" ${renewal==='quarterly'?'selected':''}>Quarterly</option>
+        </select>`;
+      }
+
+      row.innerHTML = `
+        <td data-label="Card">${cardHtml}</td>
+        <td data-label="Owner"><span style="font-size:12px;color:#888">${owner}</span></td>
+        <td data-label="Perk"><div class="perk-label">${perkLabel}</div></td>
+        ${isRideshare ? `<td data-label="Enrollment Required">${enrollHtml}</td>` : isFnas || isShopping || isGlobalEntry || isTravel || isDining || isLounge ? '' : `<td data-label="${expLabel}"><div class="perk-item">${expiryHtml}</div></td>`}
+        ${isRideshare || isFees || isFnas || isGlobalEntry || isTravel ? '' : '<td data-label="Status"><div class="perk-item">' + statusHtml + '</div></td>'}
+      `;
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    section.appendChild(table);
+    app.appendChild(section);
+  });
+
+  // Bind events
+  document.querySelectorAll('.ctrl-checkbox').forEach(el => {
+    el.addEventListener('change', handleChange);
+  });
+  document.querySelectorAll('.ctrl-number').forEach(el => {
+    el.addEventListener('change', handleChange);
+  });
+  document.querySelectorAll('.ctrl-text').forEach(el => {
+    el.addEventListener('change', handleChange);
+  });
+  document.querySelectorAll('.ctrl-date').forEach(el => {
+    el.addEventListener('change', handleChange);
+  });
+  document.querySelectorAll('.ctrl-select').forEach(el => {
+    el.addEventListener('change', handleChange);
+  });
+  document.querySelectorAll('.ctrl-btn').forEach(el => {
+    el.addEventListener('click', handleClick);
+  });
+}
+
+function handleChange(e) {
+  const state = getState();
+  const k = e.target.dataset.key;
+  if (!state[k]) state[k] = {};
+  state[k][e.target.dataset.path] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+  setState(state);
+  toast('Saved ✓');
+  render();
+}
+
+function handleClick(e) {
+  const state = getState();
+  const k = e.target.dataset.key;
+  const max = parseInt(e.target.dataset.max);
+  const action = e.target.dataset.action;
+  if (!state[k]) state[k] = { used:0 };
+  let cur = parseInt(state[k].used) || 0;
+  if (action === 'inc' && cur < max) cur++;
+  else if (action === 'dec' && cur > 0) cur--;
+  state[k].used = cur;
+  setState(state);
+  toast('Saved ✓');
+  render();
+}
+
+function resetAll() {
+  if (!confirm('Reset all tracking data?')) return;
+  localStorage.removeItem('ccMatrix');
+  render();
+  toast('Data reset');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 1200);
+  document.getElementById('statusBar').textContent = `Last saved: ${new Date().toLocaleString()}`;
+}
+
+render();
+</script>
+</body>
+</html>
