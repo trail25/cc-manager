@@ -5,11 +5,11 @@
 - `cc` / `cc_manager.py` — CLI tool for card/fee management
 
 ## Cards tracked (12)
-- Jin Bao: IHG Premier, United Explorer, Aeroplan, World of Hyatt, Marriott Boundless, Hilton Aspire
-- Xiaoguang Dai: United Explorer, Amex Platinum, Alaska Atmos Summit, Aeroplan, World of Hyatt, Chase Sapphire Preferred
+- Jin Bao: IHG Premier, United Explorer, World of Hyatt, Marriott Boundless, Hilton Aspire
+- Xiaoguang Dai: United Explorer, Amex Platinum, Alaska Atmos Summit, World of Hyatt, Chase Sapphire Preferred
 
 ## Categories
-1. Annual Fees — 12 cards, renewal dates
+1. Annual Fees — 10 cards, renewal dates
 2. Hotel Free Nights — annual + bonus nights (counter type for bonuses)
 3. Free Night on Award Stays — reminders only
 4. Airline Credits — IHG TravelBank, Amex $200 (dollar_airline), Marriott $50 ($250 spend req'd), Hilton $50/qtr (TravelBank works)

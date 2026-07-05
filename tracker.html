@@ -99,8 +99,6 @@ const CARDS = [
   { name:"United Explorer", owner:"Xiaoguang Dai", fee:150 },
   { name:"Amex Platinum", owner:"Xiaoguang Dai", fee:895 },
   { name:"Alaska Atmos Summit", owner:"Xiaoguang Dai", fee:395 },
-  { name:"Aeroplan", owner:"Jin Bao", fee:95 },
-  { name:"Aeroplan", owner:"Xiaoguang Dai", fee:95 },
   { name:"World of Hyatt", owner:"Jin Bao", fee:95 },
   { name:"World of Hyatt", owner:"Xiaoguang Dai", fee:95 },
   { name:"Marriott Boundless", owner:"Jin Bao", fee:95 },
@@ -117,33 +115,31 @@ const CATEGORIES = [
       [2,"","United Explorer","Xiaoguang Dai","$150/yr","expiry"],
       [3,"","Amex Platinum","Xiaoguang Dai","$895/yr","expiry"],
       [4,"","Alaska Summit","Xiaoguang Dai","$395/yr","expiry"],
-      [5,"","Aeroplan","Jin Bao","$95/yr","expiry"],
-      [6,"","Aeroplan","Xiaoguang Dai","$95/yr","expiry"],
-      [7,"","World of Hyatt","Jin Bao","$95/yr","expiry"],
-      [8,"","World of Hyatt","Xiaoguang Dai","$95/yr","expiry"],
-      [9,"","Marriott Boundless","Jin Bao","$95/yr","expiry"],
-      [10,"","Hilton Aspire","Jin Bao","$550/yr","expiry"],
-      [11,"","Chase Sapphire Preferred","Xiaoguang Dai","$95/yr","expiry"],
+      [5,"","World of Hyatt","Jin Bao","$95/yr","expiry"],
+      [6,"","World of Hyatt","Xiaoguang Dai","$95/yr","expiry"],
+      [7,"","Marriott Boundless","Jin Bao","$95/yr","expiry"],
+      [8,"","Hilton Aspire","Jin Bao","$550/yr","expiry"],
+      [9,"","Chase Sapphire Preferred","Xiaoguang Dai","$95/yr","expiry"],
     ]
   },
   {
     label: "🏨 Hotel Free Nights",
     perks: [
       [0,0,"IHG Premier","Jin Bao","Anniversary Free Night (40k)","expiry"],
-      [7,0,"World of Hyatt","Jin Bao","Free Cat 1-4 night","expiry"],
-      [8,0,"World of Hyatt","Xiaoguang Dai","Free Cat 1-4 night","expiry"],
-      [9,0,"Marriott Boundless","Jin Bao","Free Night Award (35k)","expiry"],
-      [10,0,"Hilton Aspire","Jin Bao","Free Night Award (no cap)","expiry"],
-      [7,5,"World of Hyatt","Jin Bao","3x Cat 1-4 Free Nights (bonus)","counter",3,"expiry"],
-      [9,6,"Marriott Boundless","Jin Bao","5x 50k Free Nights (bonus)","counter",5,"expiry"],
+      [5,0,"World of Hyatt","Jin Bao","Free Cat 1-4 night","expiry"],
+      [6,0,"World of Hyatt","Xiaoguang Dai","Free Cat 1-4 night","expiry"],
+      [7,0,"Marriott Boundless","Jin Bao","Free Night Award (35k)","expiry"],
+      [8,0,"Hilton Aspire","Jin Bao","Free Night Award (no cap)","expiry"],
+      [5,5,"World of Hyatt","Jin Bao","3x Cat 1-4 Free Nights (bonus)","counter",3,"expiry"],
+      [7,6,"Marriott Boundless","Jin Bao","5x 50k Free Nights (bonus)","counter",5,"expiry"],
     ]
   },
   {
     label: "🎁 Free Night on Award Stays",
     perks: [
       [0,"","IHG Premier","Jin Bao","Redeem 3, get 4th Night Free","reminder"],
-      [10,"","Hilton Aspire","Jin Bao","5th Night Free on award stays (Diamond)","reminder"],
-      [9,"","Marriott Boundless","Jin Bao","5th Night Free on award stays","reminder"],
+      [8,"","Hilton Aspire","Jin Bao","5th Night Free on award stays (Diamond)","reminder"],
+      [7,"","Marriott Boundless","Jin Bao","5th Night Free on award stays","reminder"],
     ]
   },
   {
@@ -152,9 +148,9 @@ const CATEGORIES = [
       [0,1,"IHG Premier","Jin Bao","$25 United TravelBank (Jan-Jun)","dollar",25],
       [0,"","IHG Premier","Jin Bao","$25 United TravelBank (Jul-Dec)","dollar",25],
       [3,0,"Amex Platinum","Xiaoguang Dai","$200 airline credit","dollar_airline",200],
-      [9,1,"Marriott Boundless","Jin Bao","$50 airline credit (Jan-Jun, $250 spend req'd)","dollar",50],
-      [9,"","Marriott Boundless","Jin Bao","$50 airline credit (Jul-Dec, $250 spend req'd)","dollar",50],
-      [10,1,"Hilton Aspire","Jin Bao","$200 airline credit ($50/qtr, TravelBank reloads work)","dollar",200],
+      [7,1,"Marriott Boundless","Jin Bao","$50 airline credit (Jan-Jun, $250 spend req'd)","dollar",50],
+      [7,"","Marriott Boundless","Jin Bao","$50 airline credit (Jul-Dec, $250 spend req'd)","dollar",50],
+      [8,1,"Hilton Aspire","Jin Bao","$200 airline credit ($50/qtr, TravelBank reloads work)","dollar",200],
     ]
   },
   {
@@ -168,11 +164,11 @@ const CATEGORIES = [
     label: "🏨 Hotel Credits",
     perks: [
       [3,1,"Amex Platinum","Xiaoguang Dai","$600 FHR/THC hotel credit","dollar",600],
-      [10,2,"Hilton Aspire","Jin Bao","$400 Hilton resort credit","dollar",400],
-      [10,3,"Hilton Aspire","Jin Bao","$100 Waldorf Astoria/Conrad","dollar",100],
+      [8,2,"Hilton Aspire","Jin Bao","$400 Hilton resort credit","dollar",400],
+      [8,3,"Hilton Aspire","Jin Bao","$100 Waldorf Astoria/Conrad","dollar",100],
       [1,4,"United Explorer","Jin Bao","$100 United Hotels credit (2x $50)","dollar",100],
       [2,5,"United Explorer","Xiaoguang Dai","$100 United Hotels credit (2x $50)","dollar",100],
-      [11,6,"Chase Sapphire Preferred","Xiaoguang Dai","$50 Chase Travel hotel credit","dollar",50],
+      [9,6,"Chase Sapphire Preferred","Xiaoguang Dai","$50 Chase Travel hotel credit","dollar",50],
     ]
   },
   {
@@ -199,7 +195,7 @@ const CATEGORIES = [
       [1,6,"United Explorer","Jin Bao","$5/mo rideshare credit","dollar",60],
       [2,6,"United Explorer","Xiaoguang Dai","$5/mo rideshare credit","dollar",60],
       [3,3,"Amex Platinum","Xiaoguang Dai","$200 Uber Cash ($15/mo)","dollar",200],
-      [11,7,"Chase Sapphire Preferred","Xiaoguang Dai","DashPass (DoorDash)","reminder"],
+      [9,7,"Chase Sapphire Preferred","Xiaoguang Dai","DashPass (DoorDash)","reminder"],
     ]
   },
   {
@@ -222,10 +218,8 @@ const CATEGORIES = [
       [2,4,"United Explorer","Xiaoguang Dai","Every 4 yrs","reminder"],
       [3,7,"Amex Platinum","Xiaoguang Dai","Every 4 yrs","reminder"],
       [4,6,"Alaska Summit","Xiaoguang Dai","Every 4 yrs","reminder"],
-      [5,1,"Aeroplan","Jin Bao","Every 4 yrs","reminder"],
-      [6,1,"Aeroplan","Xiaoguang Dai","Every 4 yrs","reminder"],
       [3,8,"Amex Platinum","Xiaoguang Dai","$209 CLEAR+ credit","reminder"],
-      [10,9,"Hilton Aspire","Jin Bao","$209 CLEAR+ credit","reminder"],
+      [8,9,"Hilton Aspire","Jin Bao","$209 CLEAR+ credit","reminder"],
     ]
   },
   {
@@ -241,9 +235,7 @@ const CATEGORIES = [
       [4,2,"Alaska Summit","Xiaoguang Dai","Free checked bag (+6 guests)","reminder"],
       [4,3,"Alaska Summit","Xiaoguang Dai","10k bonus status pts/yr","reminder"],
       [4,4,"Alaska Summit","Xiaoguang Dai","$50 delay/cancellation voucher","reminder"],
-      [5,0,"Aeroplan","Jin Bao","Free first checked bag (+8)","reminder"],
-      [6,0,"Aeroplan","Xiaoguang Dai","Free first checked bag (+8)","reminder"],
-      [10,4,"Hilton Aspire","Jin Bao","14x Hilton / 7x flights & dining","reminder"],
+      [8,4,"Hilton Aspire","Jin Bao","14x Hilton / 7x flights & dining","reminder"],
     ]
   },
 ];
