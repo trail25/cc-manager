@@ -2,14 +2,16 @@
 """Credit Card Manager — track rewards, perks, fees, and find the best card for any spend."""
 
 import argparse
+import calendar
 import json
 import os
 import sys
-from datetime import datetime, date
+import tempfile
+from datetime import date
 from pathlib import Path
 from typing import Optional
 
-DATA_DIR = Path.home() / ".cc_manager"
+DATA_DIR = Path(os.getenv("CC_MANAGER_DATA_DIR", Path.home() / ".cc_manager")).expanduser()
 DATA_FILE = DATA_DIR / "cards.json"
 
 
@@ -23,14 +25,31 @@ def load_cards() -> list[dict]:
     _ensure_dir()
     if not DATA_FILE.exists():
         return []
-    with open(DATA_FILE) as f:
-        return json.load(f)
+    try:
+        with open(DATA_FILE) as f:
+            data = json.load(f)
+    except json.JSONDecodeError as exc:
+        print(f"Could not read {DATA_FILE}: invalid JSON ({exc})")
+        sys.exit(1)
+    if not isinstance(data, list):
+        print(f"Could not read {DATA_FILE}: expected a list of cards")
+        sys.exit(1)
+    return data
 
 
 def save_cards(cards: list[dict]):
     _ensure_dir()
-    with open(DATA_FILE, "w") as f:
+    with tempfile.NamedTemporaryFile(
+        "w",
+        dir=DATA_DIR,
+        prefix=f"{DATA_FILE.name}.",
+        suffix=".tmp",
+        delete=False,
+    ) as f:
         json.dump(cards, f, indent=2, default=str)
+        f.write("\n")
+        tmp_name = f.name
+    Path(tmp_name).replace(DATA_FILE)
 
 
 def _find_card(cards: list[dict], name: str) -> Optional[dict]:
@@ -43,13 +62,26 @@ def _find_card(cards: list[dict], name: str) -> Optional[dict]:
 def _next_due(day: int) -> str:
     """Return the next due date as YYYY-MM-DD given a day-of-month."""
     today = date.today()
-    due = date(today.year, today.month, day)
+    last_day = calendar.monthrange(today.year, today.month)[1]
+    due = date(today.year, today.month, min(day, last_day))
     if due <= today:
         if today.month == 12:
-            due = date(today.year + 1, 1, day)
+            next_year, next_month = today.year + 1, 1
         else:
-            due = date(today.year, today.month + 1, day)
+            next_year, next_month = today.year, today.month + 1
+        last_day = calendar.monthrange(next_year, next_month)[1]
+        due = date(next_year, next_month, min(day, last_day))
     return due.isoformat()
+
+
+def _due_day(value: str) -> int:
+    try:
+        day = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError("due day must be a number from 1 to 31")
+    if day < 1 or day > 31:
+        raise argparse.ArgumentTypeError("due day must be from 1 to 31")
+    return day
 
 
 # ─── Pretty Printers ──────────────────────────────────────────────────────────
@@ -178,7 +210,7 @@ def cmd_edit(args):
     elif args.field == "annual-fee":
         card["annual_fee"] = int(args.value)
     elif args.field == "due-day":
-        card["due_day"] = int(args.value)
+        card["due_day"] = _due_day(args.value)
     else:
         print(f"Unknown field: {args.field}. Valid: name, issuer, annual-fee, due-day")
         sys.exit(1)
@@ -280,14 +312,14 @@ def main():
     p_add.add_argument("name", help="Card name (e.g. 'Chase Sapphire Preferred')")
     p_add.add_argument("--issuer", "-i", required=True, help="Bank/issuer name")
     p_add.add_argument("--annual-fee", "-f", type=int, default=0, help="Annual fee in USD")
-    p_add.add_argument("--due-day", "-d", type=int, required=True, help="Payment due day of month (1-31)")
+    p_add.add_argument("--due-day", "-d", type=_due_day, required=True, help="Payment due day of month (1-31)")
     p_add.set_defaults(func=cmd_add)
 
     # add-reward
     p_rw = sub.add_parser("add-reward", help="Add a reward category to a card")
     p_rw.add_argument("name", help="Card name")
     p_rw.add_argument("--category", "-c", required=True, help="Spend category (e.g. dining, travel)")
-    p_rw.add_argument("--rate", "-r", required=True, help="Reward rate (e.g. 3 for 3%)")
+    p_rw.add_argument("--rate", "-r", type=float, required=True, help="Reward rate (e.g. 3 for 3%)")
     p_rw.set_defaults(func=cmd_add_reward)
 
     # add-credit
