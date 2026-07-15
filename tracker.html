@@ -104,6 +104,7 @@ const CARDS = [
   { name:"Marriott Boundless", owner:"Jin Bao", fee:95 },
   { name:"Hilton Aspire", owner:"Jin Bao", fee:550 },
   { name:"Chase Sapphire Preferred", owner:"Xiaoguang Dai", fee:95 },
+  { name:"Delta Amex Gold", owner:"Xiaoguang Dai", fee:150 },
 ];
 
 const CATEGORIES = [
@@ -120,6 +121,7 @@ const CATEGORIES = [
       [7,"","Marriott Boundless","Jin Bao","$95/yr","expiry"],
       [8,"","Hilton Aspire","Jin Bao","$550/yr","expiry"],
       [9,"","Chase Sapphire Preferred","Xiaoguang Dai","$95/yr","expiry"],
+      [10,"","Delta Amex Gold","Xiaoguang Dai","$150/yr (first year $0)","expiry"],
     ]
   },
   {
@@ -150,7 +152,8 @@ const CATEGORIES = [
       [3,0,"Amex Platinum","Xiaoguang Dai","$200 airline credit","dollar_airline",200],
       [7,1,"Marriott Boundless","Jin Bao","$50 airline credit (Jan-Jun, $250 spend req'd)","dollar",50],
       [7,"","Marriott Boundless","Jin Bao","$50 airline credit (Jul-Dec, $250 spend req'd)","dollar",50],
-      [8,1,"Hilton Aspire","Jin Bao","$200 airline credit ($50/qtr, TravelBank reloads work)","dollar",200],
+      [8,1,"Hilton Aspire","Jin Bao","$200 airline credit ($50/qtr)","dollar",200],
+      [10,0,"Delta Amex Gold","Xiaoguang Dai","$200 Delta flight credit (after $10k spend)","dollar",200],
     ]
   },
   {
@@ -220,6 +223,7 @@ const CATEGORIES = [
       [4,6,"Alaska Summit","Xiaoguang Dai","Every 4 yrs","reminder"],
       [3,8,"Amex Platinum","Xiaoguang Dai","$209 CLEAR+ credit","reminder"],
       [8,9,"Hilton Aspire","Jin Bao","$209 CLEAR+ credit","reminder"],
+      [10,0,"Delta Amex Gold","Xiaoguang Dai","Every 4 yrs ($120)","reminder"],
     ]
   },
   {
@@ -236,6 +240,9 @@ const CATEGORIES = [
       [4,3,"Alaska Summit","Xiaoguang Dai","10k bonus status pts/yr","reminder"],
       [4,4,"Alaska Summit","Xiaoguang Dai","$50 delay/cancellation voucher","reminder"],
       [8,4,"Hilton Aspire","Jin Bao","14x Hilton / 7x flights & dining","reminder"],
+      [10,0,"Delta Amex Gold","Xiaoguang Dai","Free first checked bag","reminder"],
+      [10,1,"Delta Amex Gold","Xiaoguang Dai","Main Cabin 1 priority boarding","reminder"],
+      [10,2,"Delta Amex Gold","Xiaoguang Dai","20% inflight savings","reminder"],
     ]
   },
 ];

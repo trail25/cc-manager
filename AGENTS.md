@@ -4,9 +4,9 @@
 - `tracker.html` — main perk matrix (open in browser, data in localStorage)
 - `cc` / `cc_manager.py` — CLI tool for card/fee management
 
-## Cards tracked (12)
+## Cards tracked (13)
 - Jin Bao: IHG Premier, United Explorer, World of Hyatt, Marriott Boundless, Hilton Aspire
-- Xiaoguang Dai: United Explorer, Amex Platinum, Alaska Atmos Summit, World of Hyatt, Chase Sapphire Preferred
+- Xiaoguang Dai: United Explorer, Amex Platinum, Alaska Atmos Summit, World of Hyatt, Chase Sapphire Preferred, Delta Amex Gold
 
 ## Categories
 1. Annual Fees — 10 cards, renewal dates
